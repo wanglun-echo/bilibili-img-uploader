@@ -21,7 +21,7 @@
                  :file-list="fileList"
                  :on-success="uploadSuccess"
                  multiple
-                 action="https://api.vc.bilibili.com/api/v1/drawImage/upload">
+                 action="https://upload.cnblogs.com/imageuploader/CorsUpload">
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">支持粘贴、拖动、点击文件上传</div>
         <wired-button elevation="3" @click.stop="clearFileList" class="clear-btn">清空</wired-button>
@@ -59,10 +59,11 @@
     name: 'Uploader',
     data() {
       return {
-        token: '1946f169%2C1573178598%2C19b54fa1',
+        token: 'CfDJ8L-rpLgFVEJMgssCVvNUAjtVVaymuhkz6-ow1kfD05JKi6UMD8k8DWKW6R09WrRwobblDYZCizZKpxALsDbaqdaT8DtkxSTDtJaoWOvkcNFTfyITOUv1OxIrRAqzB1sH9g-h35ATkJYPjVGcR-vBAJUdoFCHxzJjXHUdeF5gGFHS4pMMTLUck_uNKYhWUXO3aOCUGhRY6CAbtQaVdMN4jVvXC53D7J3p4YFG-ej4Wlyz4HlmfLDWnGAa-jVpu4cf6yhDqkwEB_odRGKOX0jWiqZoIIeMd3wKQ89maHg_R1SPMrT7jcCl6aaljxGSyl_IzdT0qcyMyozYazLW0GP_QICc953hCuV98vX68D3IAtiSFfsQGMMcPf-r_qdJ7DjLfAMteVWKC9G5rV6I2pPfjeMzo5erbbMRH0TXbPwFewWUAqnaF3gnrmpIjYfnbyZlCpeFK5ejTKmkPzZ3khLKtjNAmalaNg0Ve-6LqtucGKiojbqSW3Yf95ukohZ1hNQfSwbvHKU2d0j9U2CENQD_-OBLabOelLRznGYEm-xEjDIrM5K0nlokVCFQFYM1-LV7Lg',
         links: [
           {name: '图片链接', id: 'img', value: ''},
           {name: 'MarkDown', id: 'markdown', value: ''},
+          {name: '博客园', id: 'cnblog', value: ''},
         ],
         uploadData: {
           category: 'daily',
@@ -86,14 +87,17 @@
         this.$message('清空上传列表')
       },
       uploadSuccess(res, file){
-        if (res.message === 'success') {
-          const link = res.data.image_url.replace('http', 'https')
+        if (res.success) {
+          const link = res.message;
           this.links[0].value = link
           this.links[1].value = `![](${link})`
+          this.links[2].value = `<div align='center'><img src=${link}></div>`
           const img = document.querySelector('#img')
           const markdown = document.querySelector('#markdown')
+          const cnblog = document.querySelector('#cnblog')
           img.value = this.links[0].value
           markdown.value = this.links[1].value
+          cnblog.value = this.links[2].value
           this.copyToClipboard(img.value)
           Idb(db_img_config).then(img_db=>{
             img_db.insert({
@@ -102,8 +106,8 @@
                 id: uuid.generate(),
                 name: file.name,
                 url: link,
-                width: res.data.image_width,
-                height: res.data.image_height,
+                width: 0,
+                height: 0,
                 date: Date.now()
               },
               success: () => console.log("添加成功")
@@ -123,7 +127,7 @@
           localStorage.setItem('SESSDATA', this.token)
           chrome.cookies.set(
             {
-              url: 'https://api.vc.bilibili.com', name: 'SESSDATA', value: this.token
+              url: 'https://upload.cnblogs.com', name: 'Cnblogs.AspNetCore.Cookies', value: this.token
             }, (data) => console.log(data)
           );
           this.$message('保存成功')
